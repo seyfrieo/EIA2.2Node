@@ -61,6 +61,10 @@ namespace A6 {
                         search(query, _response);
                         break;
 
+                    case "massinsert":
+                        massinsert(_response);
+                        break;
+
                     default:
                         error();
                 }
@@ -89,6 +93,37 @@ namespace A6 {
             studiHomoAssoc[matrikel] = studi;
             _response.write("Daten empfangen");
         }
+
+        function massinsert(_response: Http.ServerResponse): void {
+            let studi: Studi[] = [];
+
+            studi.push({name: "Einstein",
+                firstname: "Albert",
+                matrikel: 123,
+                age: 1,
+                gender: true,
+                studiengang: "MKB"});
+
+            studi.push({name: "Zweistein",
+                firstname: "Albert",
+                matrikel: 456,
+                age: 2,
+                gender: true,
+                studiengang: "MKB"});
+
+            studi.push({name: "Dreistein",
+                firstname: "Albert",
+                matrikel: 789,
+                age: 3,
+                gender: true,
+                studiengang: "MKB"});
+
+            studiHomoAssoc[studi[0].matrikel] = studi[0];
+            studiHomoAssoc[studi[1].matrikel] = studi[1];
+            studiHomoAssoc[studi[2].matrikel] = studi[2];
+            _response.write("Daten empfangen");
+        }
+
 
         function refresh(_response: Http.ServerResponse): void {
             console.log(studiHomoAssoc);
