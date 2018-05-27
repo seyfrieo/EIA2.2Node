@@ -1,43 +1,120 @@
+/*    Aufgabe: (Aufgabe 6)
+    Name: (Dominik Seyfried)
+    Matrikel: (256734)
+    Datum: (27.05.2018)
+    Hiermit versichere ich, dass ich diesen
+    Code selbst geschrieben habe. Er wurde
+    nicht kopiert und auch nicht diktiert.*/
+
 import * as Http from "http";
 import * as Url from "url";
 
-namespace Server {
-    interface AssocStringString {
-        [key: string]: string;
-    }
+namespace A6 {
 
-    let port: number = process.env.PORT;
-    if (port == undefined)
-        port = 8100;
+        interface AssocStringString {
+            [key: string]: string;
+        }
 
-    let server: Http.Server = Http.createServer();
-    console.log(server);
-    server.addListener("listening", handleListen);
-    server.addListener("request", handleRequest);
-    server.listen(port);
+        interface Studi {
+            name: string;
+            firstname: string;
+            matrikel: number;
+            age: number;
+            gender: boolean;
+            studiengang: string;
+        }
 
-    function handleListen(): void {
-        console.log("Ich höre?");
-    }
-
-    function handleRequest(_request: Http.IncomingMessage, _response: Http.ServerResponse): void {
-        console.log("Ich höre Stimmen!");
-
-        let query: AssocStringString = Url.parse(_request.url, true).query;
-        let a: number = parseInt(query["a"]);
-        let b: number = parseInt(query["b"]);
-
-        for (let key in query)
-            console.log(query[key]);
+        // Struktur des homogenen assoziativen Arrays, bei dem ein Datensatz der Matrikelnummer zugeordnet ist
+        interface Studis {
+            [matrikel: string]: Studi;
+        }
 
 
-        _response.setHeader("content-type", "text/html; charset=utf-8");
-        _response.setHeader("Access-Control-Allow-Origin", "*");
+        // Homogenes assoziatives Array zur Speicherung einer Person unter der Matrikelnummer
+        let studiHomoAssoc: Studis = {};
+        let port: number = process.env.PORT;
+        if (port == undefined)
+            port = 8200;
 
-        _response.write("Ich habe dich gehört<br/>" + a + "+" + b + "<br/>");
+        let server: Http.Server = Http.createServer((_request: Http.IncomingMessage, _response: Http.ServerResponse) => {
+            _response.setHeader("content-type", "text/html; charset=utf-8");
+            _response.setHeader("Access-Control-Allow-Origin", "*");
+        });
+        server.addListener("request", handleRequest);
+        server.listen(port);
 
-        _response.write("Das Ergebnis ist: " + (a + b));
+        function handleRequest(_request: Http.IncomingMessage, _response: Http.ServerResponse): void {
+            console.log("Ich höre Stimmen!");
+            let query: AssocStringString = Url.parse(_request.url, true).query;
+            console.log(query["command"]);
+            if (query["command"] ) {
+                switch (query["command"] ) {
+                    case "insert":
+                        insert(query, _response);
+                        break;
 
-        _response.end();
-    }
+                    case "refresh":
+                        refresh(_response);
+                        break;
+
+                    case "search":
+                        search(query, _response);
+                        break;
+
+                    default:
+                        error();
+                }
+            }
+            _response.end();
+
+        }
+
+        function insert(query: AssocStringString, _response: Http.ServerResponse): void {
+            let obj: Studi = JSON.parse(query["data"]);
+            let _name: string = obj.name;
+            let _firstname: string = obj.firstname;
+            let matrikel: string = obj.matrikel.toString();
+            let _age: number = obj.age;
+            let _gender: boolean = obj.gender;
+            let _studiengang: string = obj.studiengang;
+            let studi: Studi;
+            studi = {
+                name: _name,
+                firstname: _firstname,
+                matrikel: parseInt(matrikel),
+                age: _age,
+                gender: _gender,
+                studiengang: _studiengang
+            };
+            studiHomoAssoc[matrikel] = studi;
+            _response.write("Daten empfangen");
+        }
+
+        function refresh(_response: Http.ServerResponse): void {
+            console.log(studiHomoAssoc);
+            for (let matrikel in studiHomoAssoc) {
+                let studi: Studi = studiHomoAssoc[matrikel];
+                let line: string = matrikel + ": ";
+                line += studi.studiengang + ", " + studi.name + ", " + studi.firstname + ", " + studi.age + " Jahre ";
+                line += studi.gender ? "(M)" : "(F)";
+                _response.write(line + "\n");
+            }
+        }
+
+        function search(query: AssocStringString, _response: Http.ServerResponse): void {
+            let studi: Studi = studiHomoAssoc[query["searchFor"]];
+            if (studi) {
+                let line: string = query["searchFor"] + ": ";
+                line += studi.studiengang + ", " + studi.name + ", " + studi.firstname + ", " + studi.age + " Jahre ";
+                line += studi.gender ? "(M)" : "(F)";
+                _response.write(line);
+            } else {
+                _response.write("No Match");
+            }
+        }
+
+        function error(): void {
+            alert("Error");
+        }
+
 }
