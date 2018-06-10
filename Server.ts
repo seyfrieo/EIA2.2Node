@@ -25,10 +25,21 @@ function handleRequest(_request: Http.IncomingMessage, _response: Http.ServerRes
 
     switch (command) {
         case "insert":
-            let student: StudentData = {
-                name: query["name"],
-                firstname: query["firstname"],
-                matrikel: parseInt(query["matrikel"])
+            let obj: Studi = JSON.parse(query["data"]);
+            let _name: string = obj.name;
+            let _firstname: string = obj.firstname;
+            let _matrikel: string = obj.matrikel.toString();
+            let _age: number = obj.age;
+            let _gender: boolean = obj.gender;
+            let _studiengang: string = obj.studiengang;
+            let student: Studi;
+            student = {
+                name: _name,
+                firstname: _firstname,
+                matrikel: parseInt(_matrikel),
+                age: _age,
+                gender: _gender,
+                studiengang: _studiengang
             };
             Database.insert(student);
             respond(_response, "storing data");

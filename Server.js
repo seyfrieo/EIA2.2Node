@@ -20,10 +20,21 @@ function handleRequest(_request, _response) {
     var command = query["command"];
     switch (command) {
         case "insert":
-            var student = {
-                name: query["name"],
-                firstname: query["firstname"],
-                matrikel: parseInt(query["matrikel"])
+            var obj = JSON.parse(query["data"]);
+            var _name = obj.name;
+            var _firstname = obj.firstname;
+            var _matrikel = obj.matrikel.toString();
+            var _age = obj.age;
+            var _gender = obj.gender;
+            var _studiengang = obj.studiengang;
+            var student = void 0;
+            student = {
+                name: _name,
+                firstname: _firstname,
+                matrikel: parseInt(_matrikel),
+                age: _age,
+                gender: _gender,
+                studiengang: _studiengang
             };
             Database.insert(student);
             respond(_response, "storing data");
