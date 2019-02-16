@@ -14,50 +14,44 @@ if (port == undefined)
     port = 8100;
 
 let server: Http.Server = Http.createServer();
+server.addListener("listening", handleListen);
 server.addListener("request", handleRequest);
 server.listen(port);
 
 
+
+
+
+function handleListen(): void {
+    console.log("Listening on port: " + port);
+}
+
 function handleRequest(_request: Http.IncomingMessage, _response: Http.ServerResponse): void {
     console.log("Request received");
+
     let query: AssocStringString = Url.parse(_request.url, true).query;
-    var command: string = query["command"];
+    let command: string = query["command"];
 
     switch (command) {
         case "insert":
-            let obj: Studi = JSON.parse(query["data"]);
-            let _name: string = obj.name;
-            let _firstname: string = obj.firstname;
-            let _matrikel: string = obj.matrikel.toString();
-            let _age: number = obj.age;
-            let _gender: boolean = obj.gender;
-            let _studiengang: string = obj.studiengang;
-            let student: Studi;
-            student = {
-                name: _name,
-                firstname: _firstname,
-                matrikel: parseInt(_matrikel),
-                age: _age,
-                gender: _gender,
-                studiengang: _studiengang
+            let player: playerData = {
+                name: query["name"],
+                score: parseInt(query["score"]),
             };
-            Database.insert(student);
+            Database.insert(player);
             respond(_response, "storing data");
             break;
         case "refresh":
-            Database.findAll(function(json: string): void {
-                respond(_response, json);
-            });
+            Database.findAll(findCallback);
             break;
-        case "search":
-            let matrikel: number = parseInt(query["searchFor"]);
-            Database.findStudent(matrikel, function (json: string): void {
-                respond(_response, json);
-            });
-            break;
-            default:
+        default:
             respond(_response, "unknown command: " + command);
             break;
+    }
+
+    // findCallback is an inner function so that _response is in scope
+    function findCallback(json: string): void {
+        respond(_response, json);
     }
 }
 
